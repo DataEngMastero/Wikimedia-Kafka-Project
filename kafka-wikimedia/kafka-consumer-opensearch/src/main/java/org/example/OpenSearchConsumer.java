@@ -5,6 +5,7 @@ import org.apache.http.HttpHost;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.action.index.IndexResponse;
@@ -121,10 +122,14 @@ public class OpenSearchConsumer {
             }
 
         }
-
-
-        // Create Kafka Client
-
-        // Main Code Logic
+        catch (WakeupException e) {
+            log.info("Consumer is starting to shut down");
+        } catch (Exception e) {
+            log.error("Unexpected exeception in consumer ", e);
+        } finally {
+            consumer.close();
+            openSearchClient.close();
+            log.info("THe consumer is now gracefully shut down");
+        }
     }
 }
